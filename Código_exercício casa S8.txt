@@ -1,0 +1,82 @@
+//Requisições necessárias:
+
+const express = require('express') //chama o express
+const filmesJson = require('./model/ghiblifilmes.json') //acessando o JSON  de filmes
+const app = express() //execução do express
+
+app.use(express.json()) //fazendo o body parse. traduzindo o código para JSON.
+
+//Minha porta:
+
+app.listen(1313, ()=>{
+    console.log('O servidor está na porta 1313.')
+
+})
+
+//Minha rota padrão/principal:
+app.get('/',(request, response)=>{
+    response.status(200).json(
+        [{
+            'Mensagem': 'Isso aí! API de filmes ON Roteando'
+    }])
+})
+
+//Minha rota de filmes
+
+app.get("/filmes", (request, response) => {
+    response.status(200).send(filmesJson)
+})
+
+//Minha rotas Filme por Título, id e Diretor
+
+app.get("/filmes/ano",(request,response)=>{
+    let títuloRequest = request.query.title //eu quero encontrar filme por título
+    let filmeEncontrado = filmesJson.filter(filme => filme.title == títuloRequest) //computador, filtra os anos e me dá somente o que eu pedir
+    response.status(200).send(filmeEncontrado)
+})
+
+app.get("/filmes/:id", (request, response) => {
+    let idRequest = request.params.id //eu quero encontrar filme por id
+    let filmeEncontrado = filmesJson.find(filme => filme.id == idRequest)
+    response.status(200).send(filmeEncontrado)
+})
+
+app.get("/filmes/diretor",(request,response)=>{
+    let diretorRequest = request.query.director //eu quero encontrar filme por diretor
+    let filmeEncontrado = filmesJson.filter(filme => filme.director == diretorRequest)
+    response.status(200).send(filmeEncontrado)
+})
+
+//Minha rota pra post
+
+app.post("/filmes", (request, response) => {
+    let títuloRequest = request.body.title 
+    let títuloOriginalRequest = request.body.original_title
+    let títuloOriginalRomanizadoRequest = request.body.original_title_romanised
+    let descriçãoRequest = request.body.description
+    let diretorRequest = request.body.director
+    let produtorRequest =  request.body.producer
+    let anoLançamentoRequest = request.body.release_date
+    let tempoDeDuraçãoRequest = request.body.running.time 
+
+    let novoFilme = {
+        id: (filmesJson.length)+1,
+        título: títuloRequest,
+        títuloOriginal: títuloOriginalRequest,
+        títuloOriginalRomanizado: títuloOriginalRomanizadoRequest,
+        descrição: descriçãoRequest,
+        diretor: diretorRequest,
+        produtor: produtorRequest,
+        anoLançamento: anoLançamentoRequest,
+        tempoDeDuração: tempoDeDuraçãoRequest,
+        
+    }
+    
+    filmesJson.push(novoFilme)
+    response.status(201).json([{
+        "Mensagem":"Seu filme foi cadastrado com sucesso!",
+        novoFilme
+
+    }])
+
+})
